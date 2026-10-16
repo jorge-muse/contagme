@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConTAGme — Etiqueta</title>
+<link rel="icon" type="image/webp" href="/logo.webp">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#f5f0e6; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1.2rem 3rem; }
+  .logo { width:96px; height:96px; object-fit:contain; }
+  h1.word { font-size:1.9rem; font-weight:800; letter-spacing:.06em; margin-top:.4rem; }
+  h1.word .tag { color:#d4a72c; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:18px; max-width:520px; width:100%; margin-top:1.6rem; padding:1.5rem; }
+  .found { font-size:.75rem; letter-spacing:.3em; text-transform:uppercase; color:#8d8574; text-align:center; }
+  .desc { text-align:center; font-size:1.35rem; font-weight:700; margin-top:.5rem; }
+  .meta { text-align:center; color:#cbbf9f; margin-top:.3rem; font-size:.95rem; }
+  .fresh { text-align:center; margin-top:.7rem; font-size:.8rem; color:#9fb98a; }
+  .modes { display:flex; gap:.6rem; margin-top:1.4rem; }
+  .modes button { flex:1; padding:.8rem; border-radius:12px; border:1px solid #d4a72c; background:transparent; color:#d4a72c; font-weight:700; cursor:pointer; font-size:.95rem; }
+  .modes button.active { background:#d4a72c; color:#0a0a0a; }
+  .panel { margin-top:1.3rem; }
+  .panel p { color:#ddd5c0; font-size:.95rem; line-height:1.5; }
+  textarea { width:100%; margin-top:.8rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.8rem; min-height:96px; font-family:inherit; }
+  .send { width:100%; margin-top:.7rem; padding:.85rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
+  .links a { display:block; text-align:center; margin-top:.6rem; padding:.85rem; border-radius:12px; border:1px solid #3a3a3a; color:#f5f0e6; text-decoration:none; font-weight:700; background:#1b1b1b; }
+  .notice { margin-top:1rem; text-align:center; font-size:.82rem; color:#8d8574; }
+  .sent { display:none; margin-top:.8rem; text-align:center; color:#9fb98a; font-size:.9rem; }
+  footer { margin-top:2rem; font-size:.75rem; color:#6b6558; text-align:center; }
+  .proto { color:#d4a72c; }
+</style>
+</head>
+<body>
+  <img class="logo" src="/logo.webp" alt="ConTAGme">
+  <h1 class="word">Con<span class="tag">TAG</span>me</h1>
+  <div class="card">
+    <div class="found">Etiqueta encontrada</div>
+    <div class="desc">🚗 BMW negro</div>
+    <div class="meta">📍 Virginia Beach · Etiqueta móvil (vehículo)</div>
+    <div class="fresh">● Tag permanente · verificado hoy</div>
+    <div class="modes">
+      <button id="bPriv" class="active" onclick="showMode('priv')">🔒 Modo privado</button>
+      <button id="bPub" onclick="showMode('pub')">🌐 Modo público</button>
+    </div>
+    <div class="panel" id="pPriv">
+      <p>El dueño de esta etiqueta protege su identidad. No verás su nombre ni su teléfono — pero puedes enviarle un mensaje anónimo:</p>
+      <textarea id="msg" placeholder="Escribe tu mensaje… (ej.: dejaste las luces encendidas)"></textarea>
+      <button class="send" onclick="sendMsg()">Enviar mensaje anónimo</button>
+      <div class="sent" id="sentMsg">✔ Mensaje registrado en el boceto. En la versión completa llegará al dueño al instante.</div>
+    </div>
+    <div class="panel" id="pPub" style="display:none">
+      <p>En modo público, el dueño comparte sus enlaces en un solo lugar:</p>
+      <div class="links">
+        <a href="#" onclick="return mock()">📸 Instagram</a>
+        <a href="#" onclick="return mock()">💬 WhatsApp</a>
+        <a href="#" onclick="return mock()">💳 Pagos</a>
+      </div>
+    </div>
+    <div class="notice">🔔 El dueño fue notificado: «alguien te encontró».</div>
+  </div>
+  <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026</footer>
+<script>
+  function showMode(m) {
+    document.getElementById('pPriv').style.display = m === 'priv' ? 'block' : 'none';
+    document.getElementById('pPub').style.display = m === 'pub' ? 'block' : 'none';
+    document.getElementById('bPriv').classList.toggle('active', m === 'priv');
+    document.getElementById('bPub').classList.toggle('active', m === 'pub');
+  }
+  function sendMsg() { document.getElementById('sentMsg').style.display = 'block'; }
+  function mock() { alert('Enlace de ejemplo del boceto'); return false; }
+</script>
+</body>
+</html>
