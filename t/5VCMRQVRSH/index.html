@@ -45,8 +45,11 @@
     <div class="panel" id="pPriv">
       <p>El dueño de esta etiqueta protege su identidad. No verás su nombre ni su teléfono — pero puedes enviarle un mensaje anónimo:</p>
       <textarea id="msg" placeholder="Escribe tu mensaje… (ej.: dejaste las luces encendidas)"></textarea>
+      <input id="reply" type="text" placeholder="¿Cómo puede responderte? (opcional: tu correo o red social)" style="width:100%;margin-top:.6rem;background:#0a0a0a;border:1px solid #333;border-radius:10px;color:#f5f0e6;padding:.8rem;font-family:inherit;">
+      <input id="web" type="text" style="display:none" tabindex="-1" autocomplete="off">
       <button class="send" onclick="sendMsg()">Enviar mensaje anónimo</button>
-      <div class="sent" id="sentMsg">✔ Mensaje registrado en el boceto. En la versión completa llegará al dueño al instante.</div>
+      <div class="sent" id="sentMsg">✔ Mensaje enviado. El dueño lo recibirá sin ver ningún dato tuyo.</div>
+      <div class="sent" id="demoMsg" style="color:#d4a72c">Boceto: el servidor de mensajes se conecta en el siguiente paso.</div>
     </div>
     <div class="panel" id="pPub" style="display:none">
       <p>En modo público, el dueño comparte sus enlaces en un solo lugar:</p>
@@ -66,7 +69,20 @@
     document.getElementById('bPriv').classList.toggle('active', m === 'priv');
     document.getElementById('bPub').classList.toggle('active', m === 'pub');
   }
-  function sendMsg() { document.getElementById('sentMsg').style.display = 'block'; }
+  const API_BASE = ''; // Se completa con la URL del servidor al desplegarlo
+  const CODIGO = '5VCMRQVRSH';
+  async function sendMsg() {
+    const texto = document.getElementById('msg').value.trim();
+    if (!texto) { alert('Escribe un mensaje primero'); return; }
+    if (!API_BASE) { document.getElementById('demoMsg').style.display = 'block'; return; }
+    try {
+      const r = await fetch(API_BASE + '/api/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: CODIGO, texto: texto, respuesta: document.getElementById('reply').value.trim(), web: document.getElementById('web').value }) });
+      if (r.ok) { document.getElementById('sentMsg').style.display = 'block'; }
+      else { alert('No se pudo enviar. Intenta de nuevo.'); }
+    } catch (e) { document.getElementById('demoMsg').style.display = 'block'; }
+  }
+  if (API_BASE) { fetch(API_BASE + '/api/visto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo: CODIGO }) }).catch(function(){}); }
   function mock() { alert('Enlace de ejemplo del boceto'); return false; }
 </script>
 </body>
