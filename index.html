@@ -29,9 +29,16 @@
   .hint { text-align:center; color:#8d8574; font-size:.82rem; margin-top:.5rem; }
   footer { margin-top:2.2rem; font-size:.75rem; color:#6b6558; text-align:center; }
   .proto { color:#d4a72c; }
+  .topbar { width:100%; max-width:520px; display:flex; justify-content:flex-end; align-items:center; gap:.4rem; }
+  .tlink { color:#e9e2cf; text-decoration:none; font-size:.93rem; font-weight:700; padding:.5rem .5rem; }
+  .tpill { color:#0a0a0a; background:#d4a72c; text-decoration:none; font-size:.93rem; font-weight:800; padding:.55rem 1rem; border-radius:999px; }
 </style>
 </head>
 <body>
+  <nav class="topbar">
+    <a class="tlink" href="/panel/">Iniciar sesión</a>
+    <a class="tpill" href="/cuenta/">Crear cuenta</a>
+  </nav>
   <img class="logo" src="logo.webp" alt="ConTAGme">
   <h1 class="word">Con<span class="tag">TAG</span>me</h1>
   <p class="tagline">Encuentra una etiqueta o crea la tuya.</p>
@@ -56,6 +63,7 @@
     <h2>✨ ¿Todavía no tienes la tuya?</h2>
     <p class="sub">Crea tu cuenta gratis y consigue tu propia etiqueta.</p>
     <a class="gold" href="/cuenta/">Crea una cuenta gratis</a>
+    <a class="outline" href="/panel/">Iniciar sesión</a>
   </div>
 
   <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026 · contagme.app</footer>
