@@ -4,69 +4,155 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ConTAGme</title>
-<meta name="description" content="ConTAGme — Próximamente.">
+<meta name="description" content="ConTAGme — Busca una etiqueta o crea la tuya.">
 <link rel="icon" type="image/webp" href="logo.webp">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0a0a;
-    color: #f5f0e6;
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem 1.5rem;
-  }
-  .logo {
-    width: 190px;
-    height: 190px;
-    object-fit: contain;
-    margin-bottom: 2.2rem;
-  }
-  h1 {
-    font-size: clamp(2.6rem, 9vw, 4.5rem);
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    line-height: 1.05;
-  }
-  h1 .tag { color: #d4a72c; }
-  .rule {
-    width: 84px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #d4a72c, transparent);
-    margin: 1.8rem auto;
-  }
-  .soon {
-    font-size: clamp(1rem, 3.5vw, 1.3rem);
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: #e8dcc0;
-  }
-  .soon-sub {
-    margin-top: 0.7rem;
-    font-size: 0.85rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: #8d8574;
-  }
-  footer {
-    position: absolute;
-    bottom: 1.6rem;
-    font-size: 0.8rem;
-    color: #6b6558;
-    letter-spacing: 0.08em;
-  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#f5f0e6; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1.2rem 3rem; }
+  .logo { width:110px; height:110px; object-fit:contain; }
+  h1.word { font-size:2.2rem; font-weight:800; letter-spacing:.06em; margin-top:.4rem; }
+  h1.word .tag { color:#d4a72c; }
+  .tagline { margin-top:.4rem; color:#cbbf9f; font-size:1rem; text-align:center; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:18px; max-width:520px; width:100%; margin-top:1.6rem; padding:1.5rem; }
+  .card h2 { font-size:1.15rem; font-weight:800; text-align:center; }
+  .card p.sub { text-align:center; color:#ddd5c0; font-size:.92rem; line-height:1.5; margin-top:.5rem; }
+  input[type=text] { width:100%; margin-top:1rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.85rem; font-family:inherit; font-size:1.05rem; text-transform:uppercase; text-align:center; letter-spacing:.08em; }
+  .gold { display:block; width:100%; margin-top:.8rem; padding:.9rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; text-align:center; text-decoration:none; }
+  .outline { display:block; width:100%; margin-top:.8rem; padding:.9rem; border:1px solid #d4a72c; border-radius:12px; background:transparent; color:#d4a72c; font-weight:800; cursor:pointer; font-size:1rem; text-align:center; text-decoration:none; }
+  .or { display:flex; align-items:center; gap:.8rem; margin-top:1.1rem; color:#8d8574; font-size:.85rem; }
+  .or::before, .or::after { content:''; flex:1; height:1px; background:#2a2a2a; }
+  .status { display:none; margin-top:.9rem; text-align:center; font-size:.9rem; line-height:1.5; }
+  .status.err { color:#e08a8a; }
+  .status.ok { color:#9fb98a; }
+  #scanner { display:none; margin-top:1rem; }
+  #scanner video { width:100%; border-radius:12px; border:1px solid #2a2a2a; background:#000; }
+  .hint { text-align:center; color:#8d8574; font-size:.82rem; margin-top:.5rem; }
+  footer { margin-top:2.2rem; font-size:.75rem; color:#6b6558; text-align:center; }
+  .proto { color:#d4a72c; }
 </style>
 </head>
 <body>
   <img class="logo" src="logo.webp" alt="ConTAGme">
-  <h1>Con<span class="tag">TAG</span>me</h1>
-  <div class="rule"></div>
-  <p class="soon">Próximamente</p>
-  <p class="soon-sub">Coming Soon</p>
-  <footer>© 2026 ConTAGme · contagme.app</footer>
+  <h1 class="word">Con<span class="tag">TAG</span>me</h1>
+  <p class="tagline">Encuentra una etiqueta o crea la tuya.</p>
+
+  <div class="card">
+    <h2>🔍 Buscar una etiqueta</h2>
+    <p class="sub">Escribe el código de la etiqueta que encontraste:</p>
+    <input id="codigo" type="text" placeholder="Ej.: 5VCMRQVRSH" autocomplete="off" autocapitalize="characters">
+    <button class="gold" onclick="buscar()">Buscar</button>
+    <div class="or">o</div>
+    <button class="outline" onclick="escanear()">📷 Escanear con la cámara</button>
+    <div id="scanner">
+      <video id="video" playsinline muted></video>
+      <canvas id="canvas" style="display:none"></canvas>
+      <p class="hint">Apunta la cámara al código QR de la etiqueta…</p>
+      <button class="outline" onclick="cerrarCamara()">Cerrar cámara</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>✨ ¿Todavía no tienes la tuya?</h2>
+    <p class="sub">Crea tu cuenta gratis y consigue tu propia etiqueta.</p>
+    <a class="gold" href="/cuenta/">Crea una cuenta gratis</a>
+  </div>
+
+  <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026 · contagme.app</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+  var API_BASE = 'https://contagme-api.jorgeandresvidalpena.workers.dev';
+  var stream = null, scanning = false;
+
+  function estado(txt, tipo) {
+    var s = document.getElementById('status');
+    s.textContent = txt;
+    s.className = 'status ' + (tipo || '');
+    s.style.display = 'block';
+  }
+
+  function extraerCodigo(texto) {
+    if (!texto) return '';
+    texto = String(texto).trim();
+    var i = texto.indexOf('/t/');
+    if (i >= 0) {
+      var resto = texto.slice(i + 3);
+      return resto.split('/')[0].split('?')[0].split('#')[0].toUpperCase();
+    }
+    return texto.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+  }
+
+  async function irAlTag(codigo) {
+    if (!codigo) { estado('Escribe o escanea el código de la etiqueta.', 'err'); return; }
+    estado('Buscando la etiqueta ' + codigo + '…', '');
+    var r;
+    try {
+      r = await fetch(API_BASE + '/api/tag/' + encodeURIComponent(codigo));
+    } catch (e) { estado('No se pudo contactar el servidor. Revisa tu conexión.', 'err'); return; }
+    if (r.ok) {
+      estado('✔ Etiqueta encontrada. Abriendo…', 'ok');
+      window.location.href = '/t/' + encodeURIComponent(codigo) + '/';
+    } else {
+      estado('No encontramos una etiqueta con el código ' + codigo + '. Revisa el código e inténtalo de nuevo.', 'err');
+    }
+  }
+
+  function buscar() {
+    irAlTag(extraerCodigo(document.getElementById('codigo').value));
+  }
+  document.getElementById('codigo').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') buscar();
+  });
+
+  async function escanear() {
+    var box = document.getElementById('scanner');
+    var video = document.getElementById('video');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      estado('Este navegador no permite usar la cámara aquí. Escribe el código en la casilla.', 'err');
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    } catch (e) {
+      estado('No se pudo abrir la cámara. Revisa el permiso de cámara de tu navegador.', 'err');
+      return;
+    }
+    box.style.display = 'block';
+    video.srcObject = stream;
+    await video.play();
+    scanning = true;
+    estado('Cámara abierta: apunta al código QR.', '');
+    requestAnimationFrame(tick);
+  }
+
+  function tick() {
+    if (!scanning) return;
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+      if (code && code.data) {
+        var codigo = extraerCodigo(code.data);
+        cerrarCamara();
+        if (codigo) { irAlTag(codigo); return; }
+        estado('Ese código QR no es una etiqueta de ConTAGme.', 'err');
+        return;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function cerrarCamara() {
+    scanning = false;
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    document.getElementById('scanner').style.display = 'none';
+  }
+</script>
 </body>
 </html>
