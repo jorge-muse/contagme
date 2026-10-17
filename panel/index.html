@@ -20,6 +20,9 @@
   .send { width:100%; margin-top:1rem; padding:.85rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
   .send:disabled { opacity:.55; cursor:default; }
   .outline { width:100%; margin-top:.7rem; padding:.8rem; border:1px solid #d4a72c; border-radius:12px; background:transparent; color:#d4a72c; font-weight:700; cursor:pointer; font-size:.95rem; }
+  .danger { width:100%; margin-top:.7rem; padding:.8rem; border:1px solid #a33; border-radius:12px; background:transparent; color:#e08a8a; font-weight:700; cursor:pointer; font-size:.95rem; }
+  .zona-baja { margin-top:1.6rem; border-top:1px solid #2a2a2a; padding-top:1rem; }
+  .zona-baja p { color:#8d8574; font-size:.83rem; line-height:1.5; text-align:center; margin-top:.4rem; }
   .status { display:none; margin-top:.9rem; text-align:center; font-size:.9rem; line-height:1.5; }
   .status.err { color:#e08a8a; }
   .status.ok { color:#9fb98a; }
@@ -103,6 +106,13 @@
     <div id="resultado"></div>
 
     <button class="outline" onclick="salir()">Cerrar sesión</button>
+
+    <div class="zona-baja">
+      <div class="found" style="color:#e08a8a">Zona de baja</div>
+      <p>Si eliminas tu cuenta se borran tu apodo, tus etiquetas y sus mensajes. Podrás registrarte de nuevo con el mismo correo y el mismo apodo.</p>
+      <button class="danger" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+      <div class="status" id="stBaja"></div>
+    </div>
   </div>
 
   <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026</footer>
@@ -330,6 +340,24 @@
     try { await fetch(API_BASE + '/api/logout', { method: 'POST', headers: authHeaders() }); } catch (e) {}
     limpiarSesion();
     mostrarLogin();
+  }
+
+  async function eliminarCuenta() {
+    if (!confirm('¿Seguro que quieres ELIMINAR tu cuenta? Se borrarán tu apodo, tus etiquetas y sus mensajes. Podrás registrarte de nuevo con el mismo correo.')) return;
+    var st = document.getElementById('stBaja');
+    st.textContent = 'Eliminando tu cuenta…'; st.className = 'status'; st.style.display = 'block';
+    var r;
+    try {
+      r = await fetch(API_BASE + '/api/eliminar-cuenta', { method: 'POST', headers: authHeaders() });
+    } catch (e) { st.textContent = 'No se pudo contactar el servidor.'; st.className = 'status err'; return; }
+    if (r.ok) {
+      limpiarSesion();
+      mostrarLogin();
+      var sl = document.getElementById('stLogin');
+      if (sl) { sl.textContent = '✔ Cuenta eliminada. Ya puedes registrarte de nuevo con el mismo correo.'; sl.className = 'status ok'; sl.style.display = 'block'; }
+    } else {
+      st.textContent = 'El servidor no eliminó la cuenta (' + r.status + ').'; st.className = 'status err';
+    }
   }
 
   cargarCuenta();
