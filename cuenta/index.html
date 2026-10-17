@@ -39,8 +39,13 @@
     <div class="desc">✨ Crea tu cuenta</div>
     <div class="panel">
       <p>Con tu cuenta podrás crear tu propia etiqueta y recibir mensajes anónimos sin mostrar tus datos.</p>
-      <label for="nombre">Tu nombre o apodo (opcional)</label>
-      <input id="nombre" type="text" placeholder="Ej.: Alex" autocomplete="name">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" type="text" placeholder="Ej.: Jorge" autocomplete="given-name">
+      <label for="apellido">Apellido</label>
+      <input id="apellido" type="text" placeholder="Ej.: Vidal" autocomplete="family-name">
+      <label for="apodo">Apodo o nickname</label>
+      <input id="apodo" type="text" placeholder="Ej.: George" autocomplete="nickname">
+      <p class="secure" style="text-align:left; margin-top:.4rem;">Este será tu nombre dentro de ConTAGme: con él te saludaremos, interactuarás con otros y podrán encontrarte (ej.: @tuapodo). Es único: nadie más puede usar el mismo. Tu nombre y apellido son datos privados de tu cuenta y nadie más los ve.</p>
       <label for="email">Tu correo electrónico</label>
       <input id="email" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
       <label for="clave">Crea una contraseña (mínimo 8 caracteres)</label>
@@ -68,10 +73,15 @@
 
   async function registrar() {
     var nombre = document.getElementById('nombre').value.trim();
+    var apellido = document.getElementById('apellido').value.trim();
+    var apodo = document.getElementById('apodo').value.trim();
     var email = document.getElementById('email').value.trim();
     var clave = document.getElementById('clave').value;
     var clave2 = document.getElementById('clave2').value;
     var btn = document.getElementById('btn');
+    if (!nombre) { estado('Escribe tu nombre, por favor.', 'err'); return; }
+    if (!apellido) { estado('Escribe tu apellido, por favor.', 'err'); return; }
+    if (!apodo) { estado('Escribe tu apodo o nickname, por favor.', 'err'); return; }
     if (!email || email.indexOf('@') < 1) { estado('Escribe un correo válido, por favor.', 'err'); return; }
     if (clave.length < 8) { estado('La contraseña debe tener al menos 8 caracteres.', 'err'); return; }
     if (clave !== clave2) { estado('Las dos contraseñas no coinciden.', 'err'); return; }
@@ -82,7 +92,7 @@
       r = await fetch(API_BASE + '/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre, email: email, password: clave, web: document.getElementById('web').value })
+        body: JSON.stringify({ nombre: nombre, apellido: apellido, apodo: apodo, email: email, password: clave, web: document.getElementById('web').value })
       });
     } catch (e) {
       btn.disabled = false;
@@ -93,11 +103,27 @@
     if (r.ok && data.token) {
       try {
         localStorage.setItem('contagme_token', data.token);
+        localStorage.setItem('contagme_user', JSON.stringify(data));
         localStorage.setItem('contagme_email', data.email);
-        localStorage.setItem('contagme_nombre', data.nombre || '');
+        localStorage.setItem('contagme_nombre', data.apodo || data.nombre || '');
       } catch (e) {}
       estado('✔ ¡Cuenta creada! Entrando a tu panel…', 'ok');
       setTimeout(function () { window.location.href = '/panel/'; }, 700);
+    } else if (data.error === 'falta_nombre') {
+      btn.disabled = false;
+      estado('Escribe tu nombre, por favor.', 'err');
+    } else if (data.error === 'falta_apellido') {
+      btn.disabled = false;
+      estado('Escribe tu apellido, por favor.', 'err');
+    } else if (data.error === 'falta_apodo') {
+      btn.disabled = false;
+      estado('Escribe tu apodo o nickname, por favor.', 'err');
+    } else if (data.error === 'apodo_invalido') {
+      btn.disabled = false;
+      estado('El apodo debe tener de 3 a 20 caracteres: solo letras, números, punto, guion y guion bajo.', 'err');
+    } else if (data.error === 'apodo_en_uso') {
+      btn.disabled = false;
+      estado('Ese apodo ya lo tiene otro usuario. Elige otro, por favor.', 'err');
     } else if (data.error === 'correo_ya_registrado') {
       btn.disabled = false;
       estado('Ese correo ya tiene una cuenta. Inicia sesión en tu panel.', 'err');
