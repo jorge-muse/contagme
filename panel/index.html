@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConTAGme — Mi cuenta</title>
+<link rel="icon" type="image/webp" href="/logo.webp">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#f5f0e6; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1.2rem 3rem; }
+  .logo { width:96px; height:96px; object-fit:contain; }
+  h1.word { font-size:1.9rem; font-weight:800; letter-spacing:.06em; margin-top:.4rem; }
+  h1.word .tag { color:#d4a72c; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:18px; max-width:520px; width:100%; margin-top:1.6rem; padding:1.5rem; }
+  .found { font-size:.75rem; letter-spacing:.3em; text-transform:uppercase; color:#8d8574; text-align:center; }
+  .desc { text-align:center; font-size:1.3rem; font-weight:700; margin-top:.5rem; }
+  .hello { text-align:center; color:#cbbf9f; margin-top:.3rem; font-size:.98rem; }
+  label { display:block; margin-top:1rem; font-size:.85rem; color:#cbbf9f; }
+  input, select { width:100%; margin-top:.4rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.8rem; font-family:inherit; font-size:1rem; }
+  .send { width:100%; margin-top:1rem; padding:.85rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
+  .send:disabled { opacity:.55; cursor:default; }
+  .outline { width:100%; margin-top:.7rem; padding:.8rem; border:1px solid #d4a72c; border-radius:12px; background:transparent; color:#d4a72c; font-weight:700; cursor:pointer; font-size:.95rem; }
+  .status { display:none; margin-top:.9rem; text-align:center; font-size:.9rem; line-height:1.5; }
+  .status.err { color:#e08a8a; }
+  .status.ok { color:#9fb98a; }
+  .tagbox { border:1px solid #2a2a2a; border-radius:12px; background:#101010; padding:1rem; margin-top:.8rem; }
+  .tagbox .t { font-weight:700; font-size:1.05rem; }
+  .tagbox .m { color:#8d8574; font-size:.85rem; margin-top:.3rem; line-height:1.5; }
+  .tagbox .row { display:flex; gap:.6rem; margin-top:.7rem; }
+  .tagbox .row button, .tagbox .row a { flex:1; text-align:center; padding:.6rem; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; text-decoration:none; }
+  .bVer { border:1px solid #d4a72c; background:transparent; color:#d4a72c; }
+  .bAbrir { border:1px solid #3a3a3a; background:#1b1b1b; color:#f5f0e6; }
+  .views { text-align:center; margin-top:1rem; color:#9fb98a; font-weight:700; }
+  .msg { border:1px solid #2a2a2a; border-radius:12px; background:#0d0d0d; padding:.9rem; margin-top:.7rem; }
+  .msg .txt { line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+  .msg .meta { margin-top:.4rem; font-size:.8rem; color:#8d8574; }
+  .msg .rep { margin-top:.3rem; font-size:.88rem; color:#cbbf9f; }
+  .newcode { text-align:center; font-size:1.7rem; font-weight:800; letter-spacing:.12em; color:#d4a72c; margin-top:.6rem; }
+  .newlink { text-align:center; margin-top:.4rem; font-size:.9rem; word-break:break-all; }
+  .newlink a { color:#f5f0e6; }
+  .qrwrap { display:flex; justify-content:center; margin-top:1rem; }
+  .qrbox { background:#fff; padding:14px; border-radius:12px; }
+  .hint { text-align:center; color:#8d8574; font-size:.85rem; margin-top:.6rem; line-height:1.5; }
+  .alt { text-align:center; margin-top:1.2rem; font-size:.92rem; color:#ddd5c0; }
+  .alt a { color:#d4a72c; text-decoration:none; }
+  footer { margin-top:2rem; font-size:.75rem; color:#6b6558; text-align:center; }
+  .proto { color:#d4a72c; }
+</style>
+</head>
+<body>
+  <img class="logo" src="/logo.webp" alt="ConTAGme">
+  <h1 class="word">Con<span class="tag">TAG</span>me</h1>
+
+  <!-- ===== Vista: iniciar sesión ===== -->
+  <div class="card" id="vistaLogin" style="display:none">
+    <div class="found">Mi cuenta</div>
+    <div class="desc">🔑 Inicia sesión</div>
+    <label for="liEmail">Tu correo electrónico</label>
+    <input id="liEmail" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
+    <label for="liClave">Tu contraseña</label>
+    <input id="liClave" type="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="send" id="btnLogin" onclick="entrar()">Entrar</button>
+    <div class="status" id="stLogin"></div>
+    <p class="alt">¿No tienes cuenta? <a href="/cuenta/">Crea una gratis</a></p>
+  </div>
+
+  <!-- ===== Vista: cuenta ===== -->
+  <div class="card" id="vistaCuenta" style="display:none">
+    <div class="found">Mi cuenta</div>
+    <div class="desc" id="saludo">👋 Hola</div>
+    <p class="hello" id="miCorreo"></p>
+
+    <div id="misTags"></div>
+
+    <div id="bandeja"></div>
+
+    <div class="found" style="margin-top:1.8rem">Crear una etiqueta nueva</div>
+    <label for="d1">¿Qué describe tu etiqueta? (lo principal)</label>
+    <input id="d1" type="text" placeholder="Ej.: BMW negro · Camisa amarilla · Mi restaurante">
+    <label for="d2">Segundo dato (opcional: ciudad, zona…)</label>
+    <input id="d2" type="text" placeholder="Ej.: Virginia Beach">
+    <label for="tipo">Tipo de etiqueta</label>
+    <select id="tipo">
+      <option value="movil">Móvil (se mueve: carro, persona, mascota…)</option>
+      <option value="fijo">Fija (un lugar: negocio, casa, oficina…)</option>
+    </select>
+    <label for="modo">Modo</label>
+    <select id="modo" onchange="toggleEnlaces()">
+      <option value="privado">🔒 Privado (solo mensajes anónimos)</option>
+      <option value="publico">🌐 Público (muestra también tus enlaces)</option>
+    </select>
+    <div id="enlacesBox" style="display:none">
+      <label>Tus enlaces públicos (opcionales, hasta 3)</label>
+      <input id="e1t" type="text" placeholder="Texto: Ej.: Instagram" style="margin-top:.5rem">
+      <input id="e1u" type="text" placeholder="Enlace: https://…">
+      <input id="e2t" type="text" placeholder="Texto: Ej.: WhatsApp" style="margin-top:.5rem">
+      <input id="e2u" type="text" placeholder="Enlace: https://…">
+      <input id="e3t" type="text" placeholder="Texto: Ej.: Pagos" style="margin-top:.5rem">
+      <input id="e3u" type="text" placeholder="Enlace: https://…">
+    </div>
+    <button class="send" id="btnCrear" onclick="crearTag()">Crear mi etiqueta</button>
+    <div class="status" id="stCrear"></div>
+    <div id="resultado"></div>
+
+    <button class="outline" onclick="salir()">Cerrar sesión</button>
+  </div>
+
+  <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+  var API_BASE = 'https://contagme-api.jorgeandresvidalpena.workers.dev';
+
+  function token() { try { return localStorage.getItem('contagme_token') || ''; } catch (e) { return ''; } }
+  function estado(id, txt, tipo) {
+    var s = document.getElementById(id);
+    s.textContent = txt;
+    s.className = 'status ' + (tipo || '');
+    s.style.display = 'block';
+  }
+  function authHeaders() { return { 'Authorization': 'Bearer ' + token(), 'Content-Type': 'application/json' }; }
+
+  async function entrar() {
+    var email = document.getElementById('liEmail').value.trim();
+    var clave = document.getElementById('liClave').value;
+    var btn = document.getElementById('btnLogin');
+    if (!email || !clave) { estado('stLogin', 'Escribe tu correo y tu contraseña.', 'err'); return; }
+    btn.disabled = true;
+    var r;
+    try {
+      r = await fetch(API_BASE + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: clave }) });
+    } catch (e) { btn.disabled = false; estado('stLogin', 'No se pudo contactar el servidor.', 'err'); return; }
+    var data = await r.json().catch(function () { return {}; });
+    btn.disabled = false;
+    if (r.ok && data.token) {
+      try {
+        localStorage.setItem('contagme_token', data.token);
+        localStorage.setItem('contagme_email', data.email);
+        localStorage.setItem('contagme_nombre', data.nombre || '');
+      } catch (e) {}
+      cargarCuenta();
+    } else {
+      estado('stLogin', 'Correo o contraseña incorrectos.', 'err');
+    }
+  }
+
+  async function cargarCuenta() {
+    if (!token()) { mostrarLogin(); return; }
+    var r;
+    try { r = await fetch(API_BASE + '/api/mis-tags', { headers: authHeaders() }); }
+    catch (e) { mostrarLogin(); return; }
+    if (r.status === 401) { limpiarSesion(); mostrarLogin(); return; }
+    var data = await r.json().catch(function () { return {}; });
+    document.getElementById('vistaLogin').style.display = 'none';
+    document.getElementById('vistaCuenta').style.display = 'block';
+    var nombre = '';
+    try { nombre = localStorage.getItem('contagme_nombre') || ''; } catch (e) {}
+    document.getElementById('saludo').textContent = '👋 Hola' + (nombre ? ', ' + nombre : '');
+    document.getElementById('miCorreo').textContent = data.email || '';
+    renderTags(data.tags || []);
+  }
+
+  function renderTags(tags) {
+    var box = document.getElementById('misTags');
+    box.innerHTML = '';
+    var titulo = document.createElement('div');
+    titulo.className = 'found';
+    titulo.style.marginTop = '1.4rem';
+    titulo.textContent = 'Mis etiquetas (' + tags.length + ')';
+    box.appendChild(titulo);
+    if (!tags.length) {
+      var p = document.createElement('p');
+      p.className = 'hint';
+      p.textContent = 'Todavía no tienes etiquetas. Crea la primera aquí abajo.';
+      box.appendChild(p);
+    }
+    tags.forEach(function (t) {
+      var div = document.createElement('div');
+      div.className = 'tagbox';
+      var tt = document.createElement('div');
+      tt.className = 't';
+      tt.textContent = (t.descriptores || []).join(' · ');
+      div.appendChild(tt);
+      var m = document.createElement('div');
+      m.className = 'm';
+      m.textContent = 'Código: ' + t.codigo + ' · ' + (t.tipo === 'fijo' ? 'Fija' : 'Móvil') + ' · ' + (t.modo === 'publico' ? '🌐 Pública' : '🔒 Privada');
+      div.appendChild(m);
+      var row = document.createElement('div');
+      row.className = 'row';
+      var b = document.createElement('button');
+      b.className = 'bVer';
+      b.textContent = '📩 Ver mensajes';
+      b.onclick = function () { verBandeja(t.codigo); };
+      var a = document.createElement('a');
+      a.className = 'bAbrir';
+      a.href = '/tag/?c=' + encodeURIComponent(t.codigo);
+      a.target = '_blank';
+      a.textContent = 'Abrir etiqueta';
+      row.appendChild(b);
+      row.appendChild(a);
+      div.appendChild(row);
+      box.appendChild(div);
+    });
+  }
+
+  async function verBandeja(codigo) {
+    var box = document.getElementById('bandeja');
+    box.innerHTML = '';
+    var carg = document.createElement('p');
+    carg.className = 'hint';
+    carg.textContent = 'Cargando mensajes de ' + codigo + '…';
+    box.appendChild(carg);
+    var r;
+    try { r = await fetch(API_BASE + '/api/bandeja/' + encodeURIComponent(codigo), { headers: authHeaders() }); }
+    catch (e) { carg.textContent = 'No se pudo contactar el servidor.'; return; }
+    if (!r.ok) { carg.textContent = 'No se pudieron cargar los mensajes (' + r.status + ').'; return; }
+    var data = await r.json();
+    box.innerHTML = '';
+    var v = document.createElement('div');
+    v.className = 'views';
+    v.textContent = '🔔 ' + codigo + ': alguien te encontró ' + data.vistas + (data.vistas === 1 ? ' vez' : ' veces');
+    box.appendChild(v);
+    var msgs = (data.mensajes || []).slice().reverse();
+    if (!msgs.length) {
+      var p = document.createElement('p');
+      p.className = 'hint';
+      p.textContent = 'Sin mensajes todavía en esta etiqueta.';
+      box.appendChild(p);
+      return;
+    }
+    msgs.forEach(function (m) {
+      var div = document.createElement('div');
+      div.className = 'msg';
+      var txt = document.createElement('div');
+      txt.className = 'txt';
+      txt.textContent = m.texto;
+      div.appendChild(txt);
+      if (m.respuesta) {
+        var rep = document.createElement('div');
+        rep.className = 'rep';
+        rep.textContent = '↩️ Puedes responderle por: ' + m.respuesta;
+        div.appendChild(rep);
+      }
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var f = new Date(m.ts);
+      meta.textContent = isNaN(f) ? '' : f.toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' });
+      div.appendChild(meta);
+      box.appendChild(div);
+    });
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function toggleEnlaces() {
+    document.getElementById('enlacesBox').style.display = document.getElementById('modo').value === 'publico' ? 'block' : 'none';
+  }
+
+  async function crearTag() {
+    var d1 = document.getElementById('d1').value.trim();
+    var d2 = document.getElementById('d2').value.trim();
+    var btn = document.getElementById('btnCrear');
+    if (!d1) { estado('stCrear', 'Describe tu etiqueta en el primer campo.', 'err'); return; }
+    var enlaces = [];
+    if (document.getElementById('modo').value === 'publico') {
+      for (var i = 1; i <= 3; i++) {
+        var t = document.getElementById('e' + i + 't').value.trim();
+        var u = document.getElementById('e' + i + 'u').value.trim();
+        if (u) enlaces.push({ texto: t || 'Enlace', url: u });
+      }
+    }
+    btn.disabled = true;
+    estado('stCrear', 'Creando tu etiqueta…', '');
+    var r;
+    try {
+      r = await fetch(API_BASE + '/api/crear-tag', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ descriptores: d2 ? [d1, d2] : [d1], tipo: document.getElementById('tipo').value, modo: document.getElementById('modo').value, enlaces: enlaces })
+      });
+    } catch (e) { btn.disabled = false; estado('stCrear', 'No se pudo contactar el servidor.', 'err'); return; }
+    var data = await r.json().catch(function () { return {}; });
+    btn.disabled = false;
+    if (r.ok && data.codigo) {
+      estado('stCrear', '✔ ¡Etiqueta creada!', 'ok');
+      var res = document.getElementById('resultado');
+      res.innerHTML = '';
+      var c = document.createElement('div');
+      c.className = 'newcode';
+      c.textContent = data.codigo;
+      res.appendChild(c);
+      var l = document.createElement('div');
+      l.className = 'newlink';
+      var a = document.createElement('a');
+      a.href = data.url;
+      a.target = '_blank';
+      a.textContent = data.url;
+      l.appendChild(a);
+      res.appendChild(l);
+      var wrap = document.createElement('div');
+      wrap.className = 'qrwrap';
+      var qb = document.createElement('div');
+      qb.className = 'qrbox';
+      wrap.appendChild(qb);
+      res.appendChild(wrap);
+      try { new QRCode(qb, { text: data.url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {}
+      var hint = document.createElement('p');
+      hint.className = 'hint';
+      hint.textContent = 'Este es el QR de tu etiqueta: guárdalo o imprímelo. Quien lo escanee llegará a tu etiqueta sin ver tus datos.';
+      res.appendChild(hint);
+      document.getElementById('d1').value = '';
+      document.getElementById('d2').value = '';
+      cargarCuenta();
+    } else {
+      estado('stCrear', 'El servidor no creó la etiqueta (' + r.status + ').', 'err');
+    }
+  }
+
+  function limpiarSesion() {
+    try {
+      localStorage.removeItem('contagme_token');
+      localStorage.removeItem('contagme_email');
+      localStorage.removeItem('contagme_nombre');
+    } catch (e) {}
+  }
+  function mostrarLogin() {
+    document.getElementById('vistaCuenta').style.display = 'none';
+    document.getElementById('vistaLogin').style.display = 'block';
+  }
+  async function salir() {
+    try { await fetch(API_BASE + '/api/logout', { method: 'POST', headers: authHeaders() }); } catch (e) {}
+    limpiarSesion();
+    mostrarLogin();
+  }
+
+  cargarCuenta();
+</script>
+</body>
+</html>
