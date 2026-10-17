@@ -80,6 +80,8 @@
       var resto = texto.slice(i + 3);
       return resto.split('/')[0].split('?')[0].split('#')[0].toUpperCase();
     }
+    var m = texto.match(/[?&]c=([A-Za-z0-9\-]+)/);
+    if (m) return m[1].toUpperCase();
     return texto.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
   }
 
@@ -92,7 +94,7 @@
     } catch (e) { estado('No se pudo contactar el servidor. Revisa tu conexión.', 'err'); return; }
     if (r.ok) {
       estado('✔ Etiqueta encontrada. Abriendo…', 'ok');
-      window.location.href = '/t/' + encodeURIComponent(codigo) + '/';
+      window.location.href = '/tag/?c=' + encodeURIComponent(codigo);
     } else {
       estado('No encontramos una etiqueta con el código ' + codigo + '. Revisa el código e inténtalo de nuevo.', 'err');
     }
