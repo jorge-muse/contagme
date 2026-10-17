@@ -69,7 +69,7 @@
     document.getElementById('bPriv').classList.toggle('active', m === 'priv');
     document.getElementById('bPub').classList.toggle('active', m === 'pub');
   }
-  const API_BASE = ''; // Se completa con la URL del servidor al desplegarlo
+  const API_BASE = 'https://contagme-api.jorgeandresvidalpena.workers.dev'; // Worker en vivo (Cloudflare, 2026-10-17)
   const CODIGO = '5VCMRQVRSH';
   async function sendMsg() {
     const texto = document.getElementById('msg').value.trim();
