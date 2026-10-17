@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ConTAGme — Crea tu cuenta gratis</title>
-<meta name="description" content="Crea tu cuenta gratis de ConTAGme.">
+<meta name="description" content="Crea tu cuenta gratis de ConTAGme y consigue tu propia etiqueta.">
 <link rel="icon" type="image/webp" href="/logo.webp">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -17,13 +17,16 @@
   .desc { text-align:center; font-size:1.35rem; font-weight:700; margin-top:.5rem; }
   .panel p { color:#ddd5c0; font-size:.95rem; line-height:1.5; margin-top:.8rem; text-align:center; }
   label { display:block; margin-top:1.1rem; font-size:.85rem; color:#cbbf9f; }
-  input[type=email] { width:100%; margin-top:.4rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.85rem; font-family:inherit; font-size:1rem; }
-  .send { width:100%; margin-top:1.1rem; padding:.9rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
+  input { width:100%; margin-top:.4rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.85rem; font-family:inherit; font-size:1rem; }
+  .send { width:100%; margin-top:1.2rem; padding:.9rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
   .send:disabled { opacity:.55; cursor:default; }
   .status { display:none; margin-top:1rem; text-align:center; font-size:.92rem; line-height:1.5; }
   .status.err { color:#e08a8a; }
   .status.ok { color:#9fb98a; }
-  .back { display:block; text-align:center; margin-top:1.4rem; color:#d4a72c; text-decoration:none; font-size:.92rem; }
+  .alt { text-align:center; margin-top:1.3rem; font-size:.92rem; color:#ddd5c0; }
+  .alt a, .back { color:#d4a72c; text-decoration:none; }
+  .back { display:block; text-align:center; margin-top:1rem; font-size:.92rem; }
+  .secure { margin-top:1.1rem; text-align:center; font-size:.8rem; color:#8d8574; line-height:1.5; }
   footer { margin-top:2rem; font-size:.75rem; color:#6b6558; text-align:center; }
   .proto { color:#d4a72c; }
 </style>
@@ -33,14 +36,22 @@
   <h1 class="word">Con<span class="tag">TAG</span>me</h1>
   <div class="card">
     <div class="found">Cuenta gratis</div>
-    <div class="desc">✨ Crea tu cuenta gratis</div>
+    <div class="desc">✨ Crea tu cuenta</div>
     <div class="panel">
-      <p>Estamos abriendo las cuentas poco a poco, en orden de llegada. Déjanos tu correo y serás de los primeros en crear tu propia etiqueta cuando abra el registro.</p>
+      <p>Con tu cuenta podrás crear tu propia etiqueta y recibir mensajes anónimos sin mostrar tus datos.</p>
+      <label for="nombre">Tu nombre o apodo (opcional)</label>
+      <input id="nombre" type="text" placeholder="Ej.: Alex" autocomplete="name">
       <label for="email">Tu correo electrónico</label>
       <input id="email" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
+      <label for="clave">Crea una contraseña (mínimo 8 caracteres)</label>
+      <input id="clave" type="password" placeholder="••••••••" autocomplete="new-password">
+      <label for="clave2">Repite la contraseña</label>
+      <input id="clave2" type="password" placeholder="••••••••" autocomplete="new-password">
       <input id="web" type="text" style="display:none" tabindex="-1" autocomplete="off">
-      <button class="send" id="btn" onclick="registrar()">Quiero mi cuenta gratis</button>
+      <button class="send" id="btn" onclick="registrar()">Crear mi cuenta gratis</button>
       <div class="status" id="status"></div>
+      <p class="secure">🔒 Tu contraseña viaja cifrada y se guarda como huella protegida: nadie puede verla, ni siquiera nosotros.</p>
+      <p class="alt">¿Ya tienes cuenta? <a href="/panel/">Inicia sesión</a></p>
       <a class="back" href="/">← Volver al inicio</a>
     </div>
   </div>
@@ -56,37 +67,49 @@
   }
 
   async function registrar() {
+    var nombre = document.getElementById('nombre').value.trim();
     var email = document.getElementById('email').value.trim();
+    var clave = document.getElementById('clave').value;
+    var clave2 = document.getElementById('clave2').value;
     var btn = document.getElementById('btn');
-    if (!email || email.indexOf('@') < 1 || email.indexOf('.') < 0) {
-      estado('Escribe un correo válido, por favor.', 'err');
-      return;
-    }
+    if (!email || email.indexOf('@') < 1) { estado('Escribe un correo válido, por favor.', 'err'); return; }
+    if (clave.length < 8) { estado('La contraseña debe tener al menos 8 caracteres.', 'err'); return; }
+    if (clave !== clave2) { estado('Las dos contraseñas no coinciden.', 'err'); return; }
     btn.disabled = true;
-    estado('Guardando tu lugar…', '');
+    estado('Creando tu cuenta…', '');
     var r;
     try {
-      r = await fetch(API_BASE + '/api/mensaje', {
+      r = await fetch(API_BASE + '/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          codigo: 'REGISTRO',
-          texto: 'Solicitud de cuenta gratis desde la web — correo: ' + email,
-          respuesta: email,
-          web: document.getElementById('web').value
-        })
+        body: JSON.stringify({ nombre: nombre, email: email, password: clave, web: document.getElementById('web').value })
       });
     } catch (e) {
       btn.disabled = false;
       estado('No se pudo contactar el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
       return;
     }
-    if (r.ok) {
-      estado('✔ ¡Ya estás en la lista! Te escribiremos a ' + email + ' en cuanto puedas crear tu cuenta.', 'ok');
-      document.getElementById('email').value = '';
+    var data = await r.json().catch(function () { return {}; });
+    if (r.ok && data.token) {
+      try {
+        localStorage.setItem('contagme_token', data.token);
+        localStorage.setItem('contagme_email', data.email);
+        localStorage.setItem('contagme_nombre', data.nombre || '');
+      } catch (e) {}
+      estado('✔ ¡Cuenta creada! Entrando a tu panel…', 'ok');
+      setTimeout(function () { window.location.href = '/panel/'; }, 700);
+    } else if (data.error === 'correo_ya_registrado') {
+      btn.disabled = false;
+      estado('Ese correo ya tiene una cuenta. Inicia sesión en tu panel.', 'err');
+    } else if (data.error === 'clave_muy_corta') {
+      btn.disabled = false;
+      estado('La contraseña debe tener al menos 8 caracteres.', 'err');
+    } else if (data.error === 'correo_invalido') {
+      btn.disabled = false;
+      estado('Ese correo no parece válido.', 'err');
     } else {
       btn.disabled = false;
-      estado('El servidor no aceptó la solicitud (' + r.status + '). Inténtalo más tarde.', 'err');
+      estado('El servidor no aceptó el registro (' + r.status + '). Inténtalo más tarde.', 'err');
     }
   }
 </script>
