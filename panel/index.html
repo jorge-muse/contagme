@@ -136,7 +136,7 @@
       try {
         localStorage.setItem('contagme_token', data.token);
         localStorage.setItem('contagme_email', data.email);
-        localStorage.setItem('contagme_nombre', data.nombre || '');
+        localStorage.setItem('contagme_nombre', data.apodo || data.nombre || '');
       } catch (e) {}
       cargarCuenta();
     } else {
