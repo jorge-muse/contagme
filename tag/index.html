@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConTAGme — Etiqueta</title>
+<link rel="icon" type="image/webp" href="/logo.webp">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#f5f0e6; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1.2rem 3rem; }
+  .logo { width:96px; height:96px; object-fit:contain; }
+  h1.word { font-size:1.9rem; font-weight:800; letter-spacing:.06em; margin-top:.4rem; }
+  h1.word .tag { color:#d4a72c; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:18px; max-width:520px; width:100%; margin-top:1.6rem; padding:1.5rem; }
+  .found { font-size:.75rem; letter-spacing:.3em; text-transform:uppercase; color:#8d8574; text-align:center; }
+  .desc { text-align:center; font-size:1.35rem; font-weight:700; margin-top:.5rem; line-height:1.4; }
+  .meta { text-align:center; color:#cbbf9f; margin-top:.3rem; font-size:.95rem; line-height:1.5; }
+  .fresh { text-align:center; margin-top:.7rem; font-size:.8rem; color:#9fb98a; }
+  .panel { margin-top:1.3rem; }
+  .panel p { color:#ddd5c0; font-size:.95rem; line-height:1.5; }
+  textarea { width:100%; margin-top:.8rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.8rem; min-height:96px; font-family:inherit; }
+  input[type=text] { width:100%; margin-top:.6rem; background:#0a0a0a; border:1px solid #333; border-radius:10px; color:#f5f0e6; padding:.8rem; font-family:inherit; }
+  .send { width:100%; margin-top:.7rem; padding:.85rem; border:none; border-radius:12px; background:#d4a72c; color:#0a0a0a; font-weight:800; cursor:pointer; font-size:1rem; }
+  .send:disabled { opacity:.55; cursor:default; }
+  .links a { display:block; text-align:center; margin-top:.6rem; padding:.85rem; border-radius:12px; border:1px solid #3a3a3a; color:#f5f0e6; text-decoration:none; font-weight:700; background:#1b1b1b; }
+  .notice { margin-top:1rem; text-align:center; font-size:.82rem; color:#8d8574; }
+  .sent { display:none; margin-top:.8rem; text-align:center; color:#9fb98a; font-size:.9rem; }
+  .err { display:none; margin-top:.8rem; text-align:center; color:#e08a8a; font-size:.9rem; }
+  .loading { text-align:center; color:#8d8574; margin-top:1.2rem; font-size:.95rem; }
+  footer { margin-top:2rem; font-size:.75rem; color:#6b6558; text-align:center; }
+  .proto { color:#d4a72c; }
+</style>
+</head>
+<body>
+  <img class="logo" src="/logo.webp" alt="ConTAGme">
+  <h1 class="word">Con<span class="tag">TAG</span>me</h1>
+  <div class="card" id="card">
+    <div class="loading" id="loading">Buscando la etiqueta…</div>
+    <div id="contenido" style="display:none">
+      <div class="found">Etiqueta encontrada</div>
+      <div class="desc" id="desc"></div>
+      <div class="meta" id="meta"></div>
+      <div class="fresh" id="fresh"></div>
+      <div class="panel" id="pPub" style="display:none">
+        <p>El dueño comparte sus enlaces en un solo lugar:</p>
+        <div class="links" id="links"></div>
+      </div>
+      <div class="panel" id="pPriv">
+        <p id="privText">El dueño de esta etiqueta protege su identidad. No verás su nombre ni su teléfono — pero puedes enviarle un mensaje anónimo:</p>
+        <textarea id="msg" placeholder="Escribe tu mensaje… (ej.: dejaste las luces encendidas)"></textarea>
+        <input id="reply" type="text" placeholder="¿Cómo puede responderte? (opcional: tu correo o red social)">
+        <input id="web" type="text" style="display:none" tabindex="-1" autocomplete="off">
+        <button class="send" id="btnSend" onclick="sendMsg()">Enviar mensaje anónimo</button>
+        <div class="sent" id="sentMsg">✔ Mensaje enviado. El dueño lo recibirá sin ver ningún dato tuyo.</div>
+        <div class="err" id="errMsg">No se pudo enviar. Inténtalo de nuevo.</div>
+      </div>
+      <div class="notice">🔔 El dueño fue notificado: «alguien te encontró».</div>
+    </div>
+    <div id="noExiste" style="display:none">
+      <div class="found">Etiqueta no encontrada</div>
+      <div class="desc">🤔 Esta etiqueta no existe</div>
+      <div class="meta">Revisa el código o el código QR e inténtalo de nuevo.</div>
+      <a href="/" style="display:block;text-align:center;margin-top:1.2rem;color:#d4a72c;text-decoration:none">← Volver al inicio</a>
+    </div>
+  </div>
+  <footer><span class="proto">BOCETO / PROTOTIPO</span> · ConTAGme · © 2026</footer>
+<script>
+  var API_BASE = 'https://contagme-api.jorgeandresvidalpena.workers.dev';
+  var params = new URLSearchParams(window.location.search);
+  var CODIGO = (params.get('c') || params.get('codigo') || '').toUpperCase();
+
+  function fechaBonita(iso) {
+    var f = new Date(iso + 'T12:00:00');
+    if (isNaN(f)) return iso;
+    return f.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  async function cargar() {
+    if (!CODIGO) { mostrarNoExiste(); return; }
+    var r;
+    try { r = await fetch(API_BASE + '/api/tag/' + encodeURIComponent(CODIGO)); }
+    catch (e) { mostrarNoExiste(); return; }
+    if (!r.ok) { mostrarNoExiste(); return; }
+    var tag = await r.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('contenido').style.display = 'block';
+    var descs = tag.descriptores || [];
+    document.getElementById('desc').textContent = descs[0] || 'Etiqueta';
+    var meta = [];
+    if (descs.length > 1) meta.push(descs.slice(1).join(' · '));
+    meta.push(tag.tipo === 'fijo' ? 'Etiqueta fija' : 'Etiqueta móvil');
+    document.getElementById('meta').textContent = meta.join(' · ');
+    document.getElementById('fresh').textContent = '● Actualizado el ' + fechaBonita(tag.actualizado);
+    if (tag.modo === 'publico') {
+      var links = document.getElementById('links');
+      (tag.enlaces || []).forEach(function (e) {
+        var a = document.createElement('a');
+        a.href = e.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = '🔗 ' + e.texto;
+        links.appendChild(a);
+      });
+      document.getElementById('pPub').style.display = 'block';
+      document.getElementById('privText').textContent = 'También puedes enviarle un mensaje anónimo:';
+    }
+    fetch(API_BASE + '/api/visto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo: CODIGO }) }).catch(function () {});
+  }
+
+  function mostrarNoExiste() {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('noExiste').style.display = 'block';
+  }
+
+  async function sendMsg() {
+    var texto = document.getElementById('msg').value.trim();
+    var btn = document.getElementById('btnSend');
+    document.getElementById('errMsg').style.display = 'none';
+    if (!texto) return;
+    btn.disabled = true;
+    var r;
+    try {
+      r = await fetch(API_BASE + '/api/mensaje', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: CODIGO, texto: texto, respuesta: document.getElementById('reply').value.trim(), web: document.getElementById('web').value })
+      });
+    } catch (e) { btn.disabled = false; document.getElementById('errMsg').style.display = 'block'; return; }
+    if (r.ok) {
+      document.getElementById('sentMsg').style.display = 'block';
+      document.getElementById('msg').value = '';
+      document.getElementById('reply').value = '';
+    } else {
+      document.getElementById('errMsg').style.display = 'block';
+    }
+    btn.disabled = false;
+  }
+
+  cargar();
+</script>
+</body>
+</html>
