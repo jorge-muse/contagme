@@ -45,8 +45,8 @@
 
   <div class="card">
     <h2>🔍 Buscar una etiqueta</h2>
-    <p class="sub">Escribe el código de la etiqueta que encontraste:</p>
-    <input id="codigo" type="text" placeholder="Ej.: 5VCMRQVRSH" autocomplete="off" autocapitalize="characters">
+    <p class="sub">Escribe el código de la etiqueta que encontraste, o el @apodo de la persona:</p>
+    <input id="codigo" type="text" placeholder="Ej.: 5VCMRQVRSH o @apodo" autocomplete="off" autocapitalize="characters">
     <button class="gold" onclick="buscar()">Buscar</button>
     <div class="or">o</div>
     <button class="outline" onclick="escanear()">📷 Escanear con la cámara</button>
@@ -95,7 +95,7 @@
 
   async function irAlTag(codigo) {
     if (!codigo) { estado('Escribe o escanea el código de la etiqueta.', 'err'); return; }
-    estado('Buscando la etiqueta ' + codigo + '…', '');
+    estado('Buscando «' + codigo + '»…', '');
     var r;
     try {
       r = await fetch(API_BASE + '/api/tag/' + encodeURIComponent(codigo));
@@ -103,9 +103,23 @@
     if (r.ok) {
       estado('✔ Etiqueta encontrada. Abriendo…', 'ok');
       window.location.href = '/tag/?c=' + encodeURIComponent(codigo);
-    } else {
-      estado('No encontramos una etiqueta con el código ' + codigo + '. Revisa el código e inténtalo de nuevo.', 'err');
+      return;
     }
+    // No era un código: quizás es un apodo (@usuario).
+    var apodo = codigo.replace(/^@/, '');
+    var r2;
+    try {
+      r2 = await fetch(API_BASE + '/api/apodo/' + encodeURIComponent(apodo));
+    } catch (e) { estado('No se pudo contactar el servidor. Revisa tu conexión.', 'err'); return; }
+    if (r2.ok) {
+      var d2 = await r2.json().catch(function () { return {}; });
+      if (d2.codigo) {
+        estado('✔ Encontramos a @' + (d2.apodo || apodo) + '. Abriendo su etiqueta…', 'ok');
+        window.location.href = '/tag/?c=' + encodeURIComponent(d2.codigo);
+        return;
+      }
+    }
+    estado('No encontramos una etiqueta ni un apodo con «' + codigo + '». Revisa e inténtalo de nuevo.', 'err');
   }
 
   function buscar() {
